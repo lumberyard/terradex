@@ -2,13 +2,24 @@ from textual.app import App, ComposeResult
 from textual.containers import Container, Vertical
 from textual.widgets import Tree, ListView, ListItem, Label, Markdown, Input
 import json
+import argparse
+import os
 
-# Load the Terraform provider schema from a JSON file named schema.json
-# Note: This file is generated at runtime by OpenTofu using 'tofu providers schema -json'
-def load_schema():
-    with open("/tmp/schema.json", "r") as file:
-        data = json.load(file)
-    return data.get("provider_schemas", {})  # Extract only provider schemas
+# Load the Terraform provider schema from a specified JSON file
+def load_schema(file_path=None):
+    # Use command-line argument, environment variable, or default to "schema.json"
+    if file_path is None:
+        file_path = os.environ.get("SCHEMA_FILE", "schema.json")
+    try:
+        with open(file_path, "r") as file:
+            data = json.load(file)
+        return data.get("provider_schemas", {})  # Extract only provider schemas
+    except FileNotFoundError:
+        print(f"Error: Schema file '{file_path}' not found. Please ensure it exists and is accessible.", file=sys.stderr)
+        sys.exit(1)
+    except json.JSONDecodeError as e:
+        print(f"Error: Invalid JSON in schema file '{file_path}': {e}", file=sys.stderr)
+        sys.exit(1)
 
 class TerradexApp(App):
     """A Textual app with a 3x2 Grid layout for provider navigation, attributes, and details, including search functionality with styled border titles using Textual's theming."""
@@ -50,9 +61,9 @@ class TerradexApp(App):
     }
     """
 
-    def __init__(self):
+    def __init__(self, schema_path=None):
         super().__init__()
-        self.schema = load_schema()
+        self.schema = load_schema(schema_path)
         self.last_selected_node = None  # Store the last selected node in the Tree
         self.original_tree_state = None  # Store the original Tree state for resetting
 
@@ -308,7 +319,7 @@ class TerradexApp(App):
         functions = provider_data.get("functions", {})
         markdown_content = "# Functions\n\n"
         for function_name, function_data in functions.items():
-            summary = function_data.get("summary", "No summary available.")
+            summary = function_data.get("summary", "No description available.")
             description = function_data.get("description", "No description available.")
             return_type = function_data.get("return_type", "No return type available.")
             parameters = function_data.get("parameters", [])
@@ -422,5 +433,15 @@ class TerradexApp(App):
         markdown_widget.update("# No Details Available\n\nSelect a valid resource, data source, or function to view details.")
 
 if __name__ == "__main__":
-    app = TerradexApp()
+    # Set up argument parser
+    parser = argparse.ArgumentParser(description="Terradex: A TUI for Terraform provider schemas")
+    parser.add_argument(
+        "schema_path",
+        nargs="?",  # Optional argument
+        default=os.environ.get("SCHEMA_FILE", "schema.json"),
+        help="Path to the schema.json file (or set SCHEMA_FILE environment variable, defaults to schema.json)"
+    )
+    args = parser.parse_args()
+
+    app = TerradexApp(args.schema_path)
     app.run()

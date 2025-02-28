@@ -170,6 +170,7 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 
+schema.json
 providers.tf
 .terraform
 .terraform.lock.hcl
