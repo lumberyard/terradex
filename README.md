@@ -2,6 +2,8 @@
 
 Terradex is a Textual-based Terminal User Interface (TUI) for exploring Terraform provider schemas, allowing users to navigate and search provider schemas generated from Terraform code.
 
+![screenshot](assets/terradex.png)
+
 ## Prerequisites
 
 - **Python 3.11+** installed on your system (for local testing) or Docker (recommended for deployment).
