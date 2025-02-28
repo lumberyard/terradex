@@ -62,7 +62,7 @@ terraform init
 
 3. Generate the schema file:
 
-``bash
+```bash
 terraform providers schema -json > schema.json
 ```
 
