@@ -17,7 +17,7 @@ Terradex is a Textual-based Terminal User Interface (TUI) for exploring Terrafor
 1. Clone this repository:
 
 ```bash
-git clone https://github.com/yourusername/terradex.git
+git clone https://github.com/lumberyard/terradex.git
 cd terradex
 ```
 
